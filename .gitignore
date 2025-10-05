@@ -1,0 +1,6 @@
+MessageUClient/my.info
+MessageUClient/x64/*
+MessageUClient/MessageUClient/*
+MessageUClient/.vs/*
+MessageUServer/__pycache__/*
+vcpkg/*
