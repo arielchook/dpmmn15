@@ -23,4 +23,6 @@ public:
     static std::optional<UserInfo> readMyInfo(const std::string& filename = "my.info");
     static bool writeMyInfo(const UserInfo& info, const std::string& filename = "my.info");
     static bool myInfoExists(const std::string& filename = "my.info");
+    static std::optional<std::vector<uint8_t>> readFileContent(const std::string& filepath);
+    static std::string writeToTempFile(const std::vector<uint8_t>& content);
 }; 

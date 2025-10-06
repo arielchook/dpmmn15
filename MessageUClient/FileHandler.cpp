@@ -6,6 +6,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <iomanip>
+#include <boost/filesystem.hpp>
+#include <chrono>
 
 // Helper to convert hex string to byte vector
 static std::vector<uint8_t> hexToBytes(const std::string& hex) {
@@ -73,4 +75,37 @@ bool FileHandler::writeMyInfo(const UserInfo& info, const std::string& filename)
 bool FileHandler::myInfoExists(const std::string& filename) {
     std::ifstream file(filename);
     return file.good();
+}
+
+std::optional<std::vector<uint8_t>> FileHandler::readFileContent(const std::string& filepath) {
+    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    if (!file) {
+        return std::nullopt;
+    }
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<uint8_t> buffer(size);
+    if (file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+        return buffer;
+    }
+    return std::nullopt;
+}
+
+std::string FileHandler::writeToTempFile(const std::vector<uint8_t>& content) {
+    // get temp directory in cross-platform way using boost
+    boost::filesystem::path tempDir = boost::filesystem::temp_directory_path();
+
+    // create unique filename using timestamp
+    auto timestamp = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    std::string filename = "msgU_" + std::to_string(timestamp);
+
+    boost::filesystem::path fullPath = tempDir / filename;
+
+    std::ofstream file(fullPath.string(), std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("Failed to open temp file for writing: " + fullPath.string());
+    }
+    file.write(reinterpret_cast<const char*>(content.data()), content.size());
+    return fullPath.string();
 }

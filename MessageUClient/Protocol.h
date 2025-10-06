@@ -4,7 +4,7 @@
 #include <vector>
 
 // Protocol constants
-constexpr uint8_t CLIENT_VERSION = 1;
+constexpr uint8_t CLIENT_VERSION = 2;
 constexpr size_t CLIENT_ID_SIZE = 16;
 constexpr size_t USERNAME_SIZE = 255;
 constexpr size_t PUBLIC_KEY_SIZE = 160;

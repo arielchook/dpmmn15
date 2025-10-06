@@ -34,6 +34,7 @@ void Client::run() {
         case 150: handleSendTextMessage(); break;
         case 151: handleSendSymKeyRequest(); break;
         case 152: handleSendSymKey(); break;
+        case 153: handleSendFile(); break;
         case 0: std::cout << "Exiting..." << std::endl; break;
         default: std::cout << "Invalid option." << std::endl; break;
         }
@@ -49,6 +50,7 @@ void Client::showMenu() {
     std::cout << "150) Send a text message\n";
     std::cout << "151) Send a request for symmetric key\n";
     std::cout << "152) Send your symmetric key\n";
+    std::cout << "153) Send a file\n";
     std::cout << "0) Exit client\n";
     std::cout << "? ";
 }
@@ -166,6 +168,22 @@ void Client::handleRequestWaitingMessages() {
                 }
                 else {
                     std::cerr << "Can't decrypt message" << std::endl;
+                }
+                break;
+            }
+            case MessageType::FILE_SEND: {
+                if (sender && !sender->symKey.empty()) {
+                    try {
+                        auto decrypted = CryptoWrapper::aesDecrypt(sender->symKey, content);
+                        auto saved_path = FileHandler::writeToTempFile(decrypted);
+                        std::cout << "File saved to: " << saved_path << std::endl;
+                    }
+                    catch (const std::exception& e) {
+                        std::cerr << "Can't decrypt or save file: " << e.what() << std::endl;
+                    }
+                }
+                else {
+                    std::cerr << "Can't decrypt file, no symmetric key." << std::endl;
                 }
                 break;
             }
@@ -412,4 +430,63 @@ ClientInfo* Client::findClientByID(const std::vector<uint8_t>& id) {
         }
     }
     return nullptr;
+}
+
+void Client::handleSendFile() {
+    if (!_userInfo) { std::cerr << "Please register first." << std::endl; return; }
+
+    std::cout << "Enter username to send a file to: ";
+    std::string username;
+    std::getline(std::cin, username);
+
+    ClientInfo* client = findClientByName(username);
+    if (!client) {
+        std::cout << "Client not in local list, fetching from server..." << std::endl;
+        handleRequestClientsList(); // Refresh list
+        client = findClientByName(username);
+    }
+
+    if (!client) {
+        std::cerr << "Could not find client '" << username << "'." << std::endl;
+        return;
+    }
+
+    if (client->symKey.empty()) {
+        std::cerr << "No symmetric key for " << username << ". Please send a key first." << std::endl;
+        return;
+    }
+
+    std::cout << "Enter full path to the file: ";
+    std::string filepath;
+    std::getline(std::cin, filepath);
+
+    auto file_content = FileHandler::readFileContent(filepath);
+    if (!file_content) {
+        std::cerr << "file not found or could not be read." << std::endl;
+        return;
+    }
+
+    try {
+        auto ciphertext = CryptoWrapper::aesEncrypt(client->symKey, *file_content);
+
+        SendMessageHeader msgHeader{};
+        std::copy(client->id.begin(), client->id.end(), msgHeader.clientID);
+        msgHeader.type = MessageType::FILE_SEND;
+        msgHeader.contentSize = static_cast<uint32_t>(ciphertext.size());
+
+        std::vector<uint8_t> payload;
+        payload.resize(sizeof(msgHeader) + ciphertext.size());
+        memcpy(payload.data(), &msgHeader, sizeof(msgHeader));
+        memcpy(payload.data() + sizeof(msgHeader), ciphertext.data(), ciphertext.size());
+
+        auto response = _communicator->sendAndReceive(RequestCode::SEND_MESSAGE, payload, _userInfo->uuid);
+
+        if (response && response->size() == sizeof(MessageSentResponse)) {
+            std::cout << "File sent to " << username << "." << std::endl;
+        } else {
+            std::cerr << "Failed to send file." << std::endl;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred during file encryption: " << e.what() << std::endl;
+    }
 }

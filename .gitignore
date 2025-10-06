@@ -4,3 +4,4 @@ MessageUClient/MessageUClient/*
 MessageUClient/.vs/*
 MessageUServer/__pycache__/*
 vcpkg/*
+.vscode/settings.json

@@ -21,6 +21,7 @@ private:
     void handleSendTextMessage();
     void handleSendSymKeyRequest();
     void handleSendSymKey();
+    void handleSendFile();
 
     ClientInfo* findClientByName(const std::string& name);
     ClientInfo* findClientByID(const std::vector<uint8_t>& id);
