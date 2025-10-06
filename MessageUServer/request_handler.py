@@ -52,6 +52,7 @@ class RequestHandler:
 
     def _handle_registration(self, header, payload):
         """Handles user registration request."""
+        logging.info("Handling registration request.")
         req = RegistrationRequestPayload.unpack(payload)
         username = req.name.split(b'\x00', 1)[0].decode('ascii')
 
@@ -69,6 +70,7 @@ class RequestHandler:
 
     def _handle_clients_list(self, header, payload):
         """Handles request for the list of registered clients."""
+        logging.info(f"Handling clients list request from {header.client_id.hex()}.")
         clients = self._data_manager.get_clients(exclude_id=header.client_id)
         payload_data = b"".join([ClientInfo(c['ID'], c['UserName'].encode('ascii')).pack() for c in clients])
         
@@ -77,6 +79,7 @@ class RequestHandler:
 
     def _handle_public_key(self, header, payload):
         """Handles request for a client's public key."""
+        logging.info(f"Handling public key request from {header.client_id.hex()}.")
         req = PublicKeyRequestPayload.unpack(payload)
         client = self._data_manager.get_client_by_id(req.client_id)
 
@@ -90,6 +93,7 @@ class RequestHandler:
 
     def _handle_send_message(self, header, payload):
         """Handles storing a message for a client."""
+        logging.info(f"Handling send message request from {header.client_id.hex()}.")
         msg_header_size = SendMessageRequestPayloadHeader.size
         if len(payload) < msg_header_size:
             logging.warning(f"Payload too small for message header.")
@@ -115,6 +119,7 @@ class RequestHandler:
 
     def _handle_pull_messages(self, header, payload):
         """Handles request to pull waiting messages."""
+        logging.info(f"Handling pull messages request from {header.client_id.hex()}.")
         messages = self._data_manager.get_messages_for_client(header.client_id)
         
         payload_data = b""

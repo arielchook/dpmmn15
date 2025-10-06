@@ -7,17 +7,20 @@ from data_manager import SQLiteDataManager # Or RAMDataManager for base version
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-SERVER_VERSION = 2 # Set to 1 for RAM version, 2 for DB version
+SERVER_VERSION = 2 # 2 for DB version
 
 class Server:
     """
     The main MessageU server class. Manages network connections and dispatches requests.
     """
     def __init__(self, host, port):
+
         self._host = host
         self._port = port
         self._selector = selectors.DefaultSelector()
-        self._data_manager = SQLiteDataManager('dpmmn15.db') # Use SQLiteDataManager for bonus
+        # Use sqlite db persistence for bonus points
+        self._data_manager = SQLiteDataManager('dpmmn15.db') 
+        # handler for processing requests
         self._request_handler = RequestHandler(self._data_manager, SERVER_VERSION)
         self._server_socket = None
 
@@ -27,6 +30,7 @@ class Server:
         conn, addr = sock.accept()
         logging.info(f"Accepted connection from {addr}")
         conn.setblocking(False)
+        # Register the new connection for read events
         self._selector.register(conn, selectors.EVENT_READ, self._service_connection)
 
     def _service_connection(self, key, mask):
@@ -61,6 +65,8 @@ class Server:
                 for key, mask in events:
                     callback = key.data
                     callback(key, mask)
+
+        # User pressed Ctrl-C to stop the server
         except KeyboardInterrupt:
             logging.info("Server is shutting down.")
         finally:
@@ -70,7 +76,7 @@ class Server:
             self._data_manager.close()
 
 def get_port_from_file(filename="myport.info", default_port=1357):
-    """Reads the port number from a file."""
+    """Reads the port number from a file. Default to 1357 if file not found or invalid."""
     try:
         with open(filename, 'r') as f:
             return int(f.read().strip())
@@ -80,9 +86,9 @@ def get_port_from_file(filename="myport.info", default_port=1357):
 
 def main():
     """Main function to run the server."""
-    host = '0.0.0.0'
-    port = get_port_from_file()
-    server = Server(host, port)
+    host = '0.0.0.0' # Listen on all interfaces
+    port = get_port_from_file() # Default to 1357 if file not found or invalid
+    server = Server(host, port)  
     server.start()
 
 if __name__ == "__main__":
