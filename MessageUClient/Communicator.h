@@ -6,20 +6,25 @@
 #include <boost/asio.hpp>
 #include <optional>
 
-/// <summary>
-/// Represents a TCP communicator for sending requests and receiving responses over a network connection.
-/// </summary>
+/**
+ * @brief Represents a TCP communicator for sending requests and receiving responses over a network connection.
+ */
 class Communicator {
 public:
+    /**
+     * @brief Constructs a Communicator object.
+     * @param ip The IP address of the server.
+     * @param port The port number of the server.
+     */
     Communicator(const std::string& ip, uint16_t port);
 
-    /// <summary>
-    /// Sends a request with the specified payload and client ID, and receives an optional response.
-    /// </summary>
-    /// <param name="code">The request code indicating the type of operation to perform.</param>
-    /// <param name="payload">The data to send as the request payload.</param>
-    /// <param name="clientID">The identifier of the client making the request.</param>
-    /// <returns>An optional vector of bytes containing the response data if available; std::nullopt if no response is received.</returns>
+    /**
+     * @brief Sends a request with the specified payload and client ID, and receives an optional response.
+     * @param code The request code indicating the type of operation to perform.
+     * @param payload The data to send as the request payload.
+     * @param clientID The identifier of the client making the request.
+     * @return An optional vector of bytes containing the response data if available; std::nullopt if no response is received.
+     */
     std::optional<std::vector<uint8_t>> sendAndReceive(RequestCode code, const std::vector<uint8_t>& payload, const std::vector<uint8_t>& clientID);
 
 private:

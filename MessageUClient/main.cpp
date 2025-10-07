@@ -4,7 +4,10 @@
 #include "Client.h"
 #include <iostream>
 
-// Main entry point
+/**
+ * @brief Main entry point of the application.
+ * @return 0 on success, 1 on error.
+ */
 int main() {
 	// Wrap in try-catch to handle any unexpected errors
     try {

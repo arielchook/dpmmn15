@@ -4,17 +4,24 @@
 #include "Communicator.h"
 #include <iostream>
 
-/// <summary>
-/// Constructs a Communicator object and initializes the network endpoint with the specified IP address and port.
-/// </summary>
-/// <param name="ip">The IP address to connect to, as a string.</param>
-/// <param name="port">The port number to connect to.</param>
+/**
+ * @brief Constructs a Communicator object and initializes the network endpoint with the specified IP address and port.
+ * @param ip The IP address to connect to, as a string.
+ * @param port The port number to connect to.
+ */
 Communicator::Communicator(const std::string& ip, uint16_t port)
     : _io_context(), _socket(_io_context) {
     boost::asio::ip::address addr = boost::asio::ip::make_address(ip);
     _endpoint = boost::asio::ip::tcp::endpoint(addr, port);
 }
 
+/**
+ * @brief Sends a request to the server and receives a response.
+ * @param code The request code.
+ * @param payload The payload of the request.
+ * @param clientID The client ID.
+ * @return An optional vector of bytes containing the response payload, or std::nullopt on error.
+ */
 std::optional<std::vector<uint8_t>> Communicator::sendAndReceive(RequestCode code, const std::vector<uint8_t>& payload, const std::vector<uint8_t>& clientID) {
     try {
         // Connect on each request as server is stateless

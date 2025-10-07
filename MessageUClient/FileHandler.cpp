@@ -9,7 +9,11 @@
 #include <boost/filesystem.hpp>
 #include <chrono>
 
-// Helper to convert hex string to byte vector
+/**
+ * @brief Helper function to convert a hex string to a byte vector.
+ * @param hex The hex string to convert.
+ * @return The byte vector.
+ */
 static std::vector<uint8_t> hexToBytes(const std::string& hex) {
     std::vector<uint8_t> bytes;
     for (unsigned int i = 0; i < hex.length(); i += 2) {
@@ -20,7 +24,12 @@ static std::vector<uint8_t> hexToBytes(const std::string& hex) {
     return bytes;
 }
 
-static std::string bytesToHex(const std::vector<uint8_t>& bytes) {
+/**
+ * @brief Converts a vector of bytes to a hex string.
+ * @param bytes The vector of bytes to convert.
+ * @return The hex string.
+ */
+std::string FileHandler::bytesToHex(const std::vector<uint8_t>& bytes) {
     std::stringstream ss;
     ss << std::hex;
     for (const auto& byte : bytes) {
@@ -29,6 +38,11 @@ static std::string bytesToHex(const std::vector<uint8_t>& bytes) {
     return ss.str();
 }
 
+/**
+ * @brief Reads server connection details from server.info.
+ * @param filename The name of the file to read from.
+ * @return An optional ServerInfo struct, or std::nullopt if the file cannot be read.
+ */
 std::optional<ServerInfo> FileHandler::readServerInfo(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -47,6 +61,11 @@ std::optional<ServerInfo> FileHandler::readServerInfo(const std::string& filenam
     return std::nullopt;
 }
 
+/**
+ * @brief Reads the current user's info (name, UUID, private key) from my.info.
+ * @param filename The name of the file to read from.
+ * @return An optional UserInfo struct, or std::nullopt if the file cannot be read.
+ */
 std::optional<UserInfo> FileHandler::readMyInfo(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -61,6 +80,12 @@ std::optional<UserInfo> FileHandler::readMyInfo(const std::string& filename) {
     return info;
 }
 
+/**
+ * @brief Writes the current user's info to my.info.
+ * @param info The UserInfo struct to write.
+ * @param filename The name of the file to write to.
+ * @return True if the file was written successfully, false otherwise.
+ */
 bool FileHandler::writeMyInfo(const UserInfo& info, const std::string& filename) {
     std::ofstream file(filename);
     if (!file.is_open()) {
@@ -72,11 +97,21 @@ bool FileHandler::writeMyInfo(const UserInfo& info, const std::string& filename)
     return true;
 }
 
+/**
+ * @brief Checks if the my.info file exists.
+ * @param filename The name of the file to check.
+ * @return True if the file exists, false otherwise.
+ */
 bool FileHandler::myInfoExists(const std::string& filename) {
     std::ifstream file(filename);
     return file.good();
 }
 
+/**
+ * @brief Reads the entire content of a binary file into a byte vector.
+ * @param filepath The path to the file to read.
+ * @return A vector of bytes, or std::nullopt if the file cannot be read.
+ */
 std::optional<std::vector<uint8_t>> FileHandler::readFileContent(const std::string& filepath) {
     std::ifstream file(filepath, std::ios::binary | std::ios::ate);
     if (!file) {
@@ -92,6 +127,11 @@ std::optional<std::vector<uint8_t>> FileHandler::readFileContent(const std::stri
     return std::nullopt;
 }
 
+/**
+ * @brief Writes a vector of bytes to a new file with a unique name in the system's temp directory.
+ * @param content The content to write to the file.
+ * @return The full path to the newly created file.
+ */
 std::string FileHandler::writeToTempFile(const std::vector<uint8_t>& content) {
     // get temp directory in cross-platform way using boost
     boost::filesystem::path tempDir = boost::filesystem::temp_directory_path();
