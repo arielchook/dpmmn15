@@ -44,7 +44,13 @@ void Client::run() {
     while (choice != 0) {
         showMenu();
         std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear input buffer after reading number
+
+        if (std::cin.fail()) {
+            std::cin.clear(); // Clear the error flag.
+            choice = -1; // Set to a value that triggers the default case.
+        }
+        // Always clear the rest of the line.
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         switch (choice) {
         case 110: handleRegister(); break;
